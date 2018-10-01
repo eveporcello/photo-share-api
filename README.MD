@@ -54,18 +54,6 @@ mutation Post ($input: PostPhotoInput!) {
 }
 ```
 
-* Add allPhotos Query to the schema
-
-```graphql
-allPhotos: [Photo!]!
-```
-
-* Add allPhotos Resolver
-
-```javascript
-allPhotos: (parent, args, { photos }) => photos.find().toArray()
-```
-
 Iterations
 ---------------
 

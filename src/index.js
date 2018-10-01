@@ -24,7 +24,6 @@ const typeDefs = `
 
     type Query {
         totalPhotos: Int!
-        allPhotos: [Photo!]!
     }
 
     type Mutation {
@@ -34,8 +33,7 @@ const typeDefs = `
 
 const resolvers = {
     Query: {
-        totalPhotos: (parent, args, { photos }) => photos.countDocuments(),
-        allPhotos: (parent, args, { photos }) => photos.find().toArray()
+        totalPhotos: (parent, args, { photos }) => photos.countDocuments()
     },
     Mutation: {
         postPhoto: async (parent, { input }, { photos }) => {
