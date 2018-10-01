@@ -5,30 +5,46 @@ PhotoShare is the main back-end exercise for [GraphQL Workshop](https://www.grap
 Changes
 ---------------
 
-### Add Environment variables
+* Install mongodb
 
-* [ ] Add `.env` file: `DB_HOST=mongodb://localhost:27017/photo-share`
-* [ ] Add `.env` to `.gitignore`
-* [ ] Install `dotenv`: `npm i dotenv`
-* [ ] Modify `start` script in `package.json`.
-* [ ] Log the `process.env.DB_HOST` to make sure environment vars are working
-* [ ] Start the app: `npm start`
+`npm install mongodb`
 
-__package.json__
-```json
-"scripts": {
-  "start": "nodemon -r dotenv/config ./src/index.js"
-}
-```
+* Refactor index
 
-__index.js__
 ```javascript
+const { MongoClient } = require('mongodb')
+...
+const resolvers = {
+    Query: {
+        totalPhotos: (parent, args, { photos }) => photos.countDocuments()
+    }
+}
 
-...
-console.log('database host: ', process.env.DB_HOST)
-...
+const start = async () => {
+
+    const client = await MongoClient.connect(process.env.DB_HOST, { useNewUrlParser: true })
+    const db = client.db()
+
+    const server = new ApolloServer({
+        typeDefs,
+        resolvers,
+        context: {
+            photos: db.collection('photos')
+        }
+    })
+
+    server.listen()
+        .then(({ port }) => `server listening on ${port}`)
+        .then(console.log)
+        .catch(console.error)
+
+}
+
+start()
 
 ```
+
+
 Iterations
 ---------------
 
@@ -40,11 +56,13 @@ Iterations
 ### b. The Photo Type
 
 1. [ ] Counting the Photos 
-2. [ ] Posting a Photo 
-3. [ ] Handling Photo Categories 
-4. [ ] Using an Input Type 
-5. [ ] Listing All Photos 
-6. [ ] Querying a Single Photo 
+2. [ ] Connecting to a database
+3. [ ] Setting up context
+4. [ ] Posting Photo
+5. [ ] Handling Photo Categories 
+6. [ ] Using an Input Type 
+7. [ ] Listing All Photos 
+8. [ ] Querying a Single Photo 
 
 ### c. The User Type
 
@@ -53,16 +71,14 @@ Iterations
 3. [ ] Connecting Users to Photos
 4. [ ] Adding currentUser to context
 
-### d. Context
+### d. GitHub Authorization
 
-1. [ ] Add environment and refactor
-2. [ ] Configuring a Database
-3. [ ] Configure an express server
-4. [ ] Configure Github OAuth
-5. [ ] Add `githubLogin` mutation
-6. [ ] Add fake users to `githubLogin` mutation
-7. [ ] Identify the `currentUser`
-8. [ ] Post new Photos to the Database
+1. [ ] Configure an express server
+2. [ ] Configure Github OAuth
+3. [ ] Add `githubLogin` mutation
+4. [ ] Add fake users to `githubLogin` mutation
+5. [ ] Identify the `currentUser`
+6. [ ] Post New Photos
 
 ### e. Subscriptions and Custom Scalars
 
