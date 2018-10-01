@@ -9,22 +9,61 @@ Changes
 
 ```graphql
 
-    type Photo {
-        ...
-        category: PhotoCategory!
+    input PostPhotoInput {
+        name: String!
+        description: String
+        category: PhotoCategory=PORTRAIT
     }
 
-    enum PhotoCategory {
-        PORTRAIT
-        LANDSCAPE
-        ACTION
-        SELFIE
-    }
 
     type Mutation {
-        postPhoto(name: String! description: String category: PhotoCategory=PORTRAIT): Photo!
+        postPhoto(input: PostPhotoInput!): Photo!
     }
+```
 
+* Change post photo resolver to handle the input
+
+```javascript
+postPhoto: async (parent, { input }, { photos }) => {
+
+            const newPhoto = { ...input }
+```     
+
+* Run the Test Query
+
+```graphql
+mutation Post ($input: PostPhotoInput!) {
+  postPhoto(input:$input) {
+    id
+    name
+    description
+    category
+  }
+}
+```
+
+* Add input JSON
+
+```json
+{
+  "input": {
+    "name": "Red Red Wine",
+    "description": "you make me feel so fine",
+    "category": "ACTION"
+  }
+}
+```
+
+* Add allPhotos Query to the schema
+
+```graphql
+allPhotos: [Photo!]!
+```
+
+* Add allPhotos Resolver
+
+```javascript
+allPhotos: (parent, args, { photos }) => photos.find().toArray()
 ```
 
 Iterations

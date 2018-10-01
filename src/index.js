@@ -16,23 +16,31 @@ const typeDefs = `
         SELFIE
     }
 
+    input PostPhotoInput {
+        name: String!
+        description: String
+        category: PhotoCategory=PORTRAIT
+    }
+
     type Query {
         totalPhotos: Int!
+        allPhotos: [Photo!]!
     }
 
     type Mutation {
-        postPhoto(name: String! description: String category: PhotoCategory=PORTRAIT): Photo!
+        postPhoto(input: PostPhotoInput!): Photo!
     }
 `
 
 const resolvers = {
     Query: {
-        totalPhotos: (parent, args, { photos }) => photos.countDocuments()
+        totalPhotos: (parent, args, { photos }) => photos.countDocuments(),
+        allPhotos: (parent, args, { photos }) => photos.find().toArray()
     },
     Mutation: {
-        postPhoto: async (parent, args, { photos }) => {
+        postPhoto: async (parent, { input }, { photos }) => {
 
-            const newPhoto = { ...args }
+            const newPhoto = { ...input }
 
             const { insertedId } = await photos.insertOne(newPhoto)
             newPhoto.id = insertedId.toString()
