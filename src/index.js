@@ -6,6 +6,14 @@ const typeDefs = `
         id: ID!
         name: String!
         description: String
+        category: PhotoCategory!
+    }
+
+    enum PhotoCategory {
+        PORTRAIT
+        LANDSCAPE
+        ACTION
+        SELFIE
     }
 
     type Query {
@@ -13,7 +21,7 @@ const typeDefs = `
     }
 
     type Mutation {
-        postPhoto(name: String! description: String): Photo!
+        postPhoto(name: String! description: String category: PhotoCategory=PORTRAIT): Photo!
     }
 `
 
