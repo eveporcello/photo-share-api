@@ -2,14 +2,36 @@ const { ApolloServer } = require('apollo-server')
 const { MongoClient } = require('mongodb')
 
 const typeDefs = `
+    type Photo {
+        id: ID!
+        name: String!
+        description: String
+    }
+
     type Query {
         totalPhotos: Int!
+    }
+
+    type Mutation {
+        postPhoto(name: String! description: String): Photo!
     }
 `
 
 const resolvers = {
     Query: {
         totalPhotos: (parent, args, { photos }) => photos.countDocuments()
+    },
+    Mutation: {
+        postPhoto: async (parent, args, { photos }) => {
+
+            const newPhoto = { ...args }
+
+            const { insertedId } = await photos.insertOne(newPhoto)
+            newPhoto.id = insertedId.toString()
+
+            return newPhoto
+
+        }
     }
 }
 
