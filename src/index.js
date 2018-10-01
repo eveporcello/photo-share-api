@@ -14,6 +14,8 @@ const resolvers = {
     }
 }
 
+console.log('database host: ', process.env.DB_HOST)
+
 const server = new ApolloServer({ typeDefs, resolvers })
 
 server.listen()

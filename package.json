@@ -4,7 +4,7 @@
   "description": "PhotoShare API =============== PhotoShare is the main back-end exercise for [GraphQL Workshop](https://www.graphqlworkshop.com). In this exercise, students build a GraphQL API for a small photo sharing application.",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon ./src/index.js"
+    "start": "nodemon -r dotenv/config ./src/index.js"
   },
   "repository": {
     "type": "git",
@@ -22,6 +22,7 @@
   },
   "dependencies": {
     "apollo-server": "^2.1.0",
+    "dotenv": "^6.0.0",
     "graphql": "^14.0.2"
   }
 }

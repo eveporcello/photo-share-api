@@ -5,24 +5,30 @@ PhotoShare is the main back-end exercise for [GraphQL Workshop](https://www.grap
 Changes
 ---------------
 
-### Count photos in index.js
+### Add Environment variables
 
-```javascript
-const typeDefs = `
-    type Query {
-        totalPhotos: Int!
-    }
-`
+* [ ] Add `.env` file: `DB_HOST=mongodb://localhost:27017/photo-share`
+* [ ] Add `.env` to `.gitignore`
+* [ ] Install `dotenv`: `npm i dotenv`
+* [ ] Modify `start` script in `package.json`.
+* [ ] Log the `process.env.DB_HOST` to make sure environment vars are working
+* [ ] Start the app: `npm start`
 
-const photos = []
-
-const resolvers = {
-    Query: {
-        totalPhotos: () => photos.length
-    }
+__package.json__
+```json
+"scripts": {
+  "start": "nodemon -r dotenv/config ./src/index.js"
 }
 ```
 
+__index.js__
+```javascript
+
+...
+console.log('database host: ', process.env.DB_HOST)
+...
+
+```
 Iterations
 ---------------
 
