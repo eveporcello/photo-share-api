@@ -4,66 +4,122 @@ PhotoShare is the main back-end exercise for [GraphQL Workshop](https://www.grap
 
 Changes
 ---------------
-### Modify the Schema
+### Add Subscriptions to the Schema
 
 ```graphql
-type Query {
-    me: User
-    ...
+type Subscription {
+    newUser: User!
+    newPhoto: Photo!
 }
 ```
 
-### Add the Resolver
-
-```javascript
-me: (parent, args, { currentUser }) => currentUser,
-```
-
-### Modify Context
+### Add Subscription support to the playground
 
 __index.js__
 ```javascript
-const context = async ({req}) => {
-    const photos = db.collection('photos')
-    const users = db.collection('users')
-    const githubToken = req.headers.authorization
+app.get('/playground', expressPlayground({ 
+    endpoint: '/graphql',
+    subscriptionEndpoint: '/graphql' 
+}))
+```
+
+### Create httpServer to support websocket
+
+__index.js__
+```javascript
+const { createServer } = require('http')
+```
+
+* [ ] remove `app.listen({ port }, () => { ... })`
+
+__index.js__
+```javascript
+const httpServer = createServer(app)
+server.installSubscriptionHandlers(httpServer)
+httpServer.listen({ port }, () => {
+    console.log(`photo-share api running on port ${port}`)
+})
+```
+
+### Add PubSub 
+
+__index.js__
+```javascript
+const { ApolloServer, PubSub } = require('apollo-server-express')
+```
+
+__index.js__
+```javascript
+const client = await MongoClient.connect(process.env.DB_HOST, { useNewUrlParser: true })
+const db = client.db()
+const pubsub = new PubSub()
+
+const context = async ({ req, connection }) => {
+    ...
+    const githubToken = req ? req.headers.authorization : connection.context.Authorization
     const currentUser = await users.findOne({ githubToken })
-    return { photos, users, currentUser }
+    return { photos, users, currentUser, pubsub }
 }
+```
+
+### Add Subscription Resolvers
+
+__resolvers.js__
+```javascript
+Subscription: {
+    newPhoto: {
+        subscribe: (parent, data, { pubsub }) => pubsub.asyncIterator('photo-added')
+    },
+    newUser: {
+        subscribe: (parent, data, { pubsub }) => pubsub.asyncIterator('user-added')
+    }
+}
+```
+
+### Publish Events
+
+__resolvers.js__
+```javascript
+ Mutation: {
+    postPhoto: async (parent, { input }, { photos, currentUser, pubsub }) => {
+
+        ...
+    
+        pubsub.publish('photo-added', { newPhoto })
+
+        return newPhoto
+
+    },
+    githubAuth: async (parent, { code }, { users, pubsub }) => {
+
+        ...
+
+        pubsub.publish('user-added', { newUser: user })
+
+        return { user, token: user.githubToken }
+        
+    }
+},
 ```
 
 ### Test
 
 ```graphql
-query currentUser {
-  me {
-    name
-  }
-}
-
-mutation authorize {
-  githubAuth(code:"TEST") {
-    token 
-    user {
-      ...person
-    }
-  }
-}
-
-fragment person on User {
-  name
-  githubLogin
-  avatar
-  postedPhotos {
+subscription {
+  newUser {
     name
   }
 }
 ```
 
-__HTTP Headers__
-```json
-{
-  "Authorization": "d4ef0d880dc3bfd4d445fb6a8c9674d6ebd86935"
+```graphql
+mutation auth {
+  githubAuth(code: "TEST") {
+    token
+    user {
+      name
+    }
+  }
 }
 ```
 
@@ -103,6 +159,6 @@ Iterations
 
 ### e. Subscriptions and Custom Scalars
 
-1. [ ] Adding Subscription Support 
+1. [x] Adding Subscription Support 
 2. [ ] Uploading File with postPhoto 
 3. [ ] Adding custom scalar for `DateTime`
