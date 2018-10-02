@@ -4,124 +4,64 @@ PhotoShare is the main back-end exercise for [GraphQL Workshop](https://www.grap
 
 Changes
 ---------------
-### Add Subscriptions to the Schema
+### Add a file type to the Post Photo Input
 
 ```graphql
-type Subscription {
-    newUser: User!
-    newPhoto: Photo!
+input PostPhotoInput {
+    name: String! 
+    description: String 
+    category: PhotoCategory=PORTRAIT
+    file: Upload!
 }
 ```
 
-### Add Subscription support to the playground
+### Modify the Resolver to Accept the file
 
-__index.js__
+__resolvers.js__
 ```javascript
-app.get('/playground', expressPlayground({ 
-    endpoint: '/graphql',
-    subscriptionEndpoint: '/graphql' 
-}))
+const path = require('path')
+const { authorizeWithGithub, generateFakeUsers, uploadFile } = require('./lib')
 ```
 
-### Create httpServer to support websocket
-
-__index.js__
+__resolvers.js__
 ```javascript
-const { createServer } = require('http')
-```
+postPhoto: async (parent, { input }, { photos, currentUser, pubsub }) => {
 
-* [ ] remove `app.listen({ port }, () => { ... })`
+    if (!input.file) {
+        throw new Error('a photo file is required')
+    }
 
-__index.js__
-```javascript
-const httpServer = createServer(app)
-server.installSubscriptionHandlers(httpServer)
-httpServer.listen({ port }, () => {
-    console.log(`photo-share api running on port ${port}`)
-})
-```
-
-### Add PubSub 
-
-__index.js__
-```javascript
-const { ApolloServer, PubSub } = require('apollo-server-express')
-```
-
-__index.js__
-```javascript
-const client = await MongoClient.connect(process.env.DB_HOST, { useNewUrlParser: true })
-const db = client.db()
-const pubsub = new PubSub()
-
-const context = async ({ req, connection }) => {
     ...
-    const githubToken = req ? req.headers.authorization : connection.context.Authorization
-    const currentUser = await users.findOne({ githubToken })
-    return { photos, users, currentUser, pubsub }
-}
-```
-
-### Add Subscription Resolvers
-
-__resolvers.js__
-```javascript
-Subscription: {
-    newPhoto: {
-        subscribe: (parent, data, { pubsub }) => pubsub.asyncIterator('photo-added')
-    },
-    newUser: {
-        subscribe: (parent, data, { pubsub }) => pubsub.asyncIterator('user-added')
-    }
-}
-```
-
-### Publish Events
-
-__resolvers.js__
-```javascript
- Mutation: {
-    postPhoto: async (parent, { input }, { photos, currentUser, pubsub }) => {
-
-        ...
     
-        pubsub.publish('photo-added', { newPhoto })
+    var toPath = path.join(__dirname, '..', 'assets', 'photos', `${newPhoto.id}.jpg`)
+    await uploadFile(input.file, toPath)
 
-        return newPhoto
+    pubsub.publish('photo-added', { newPhoto })
 
-    },
-    githubAuth: async (parent, { code }, { users, pubsub }) => {
+    return newPhoto
 
-        ...
-
-        pubsub.publish('user-added', { newUser: user })
-
-        return { user, token: user.githubToken }
-        
-    }
 },
 ```
 
-### Test
+### Serve the assets folder
 
-```graphql
-subscription {
-  newUser {
-    name
-  }
-}
+__index.js__
+```javascript
+const path = require('path')
+
+...
+
+app.use(
+    '/img/photos',
+    express.static(path.join(__dirname, '..', 'assets', 'photos'))
+)
 ```
 
-```graphql
-mutation auth {
-  githubAuth(code: "TEST") {
-    token
-    user {
-      name
-    }
-  }
-}
-```
+### Test the Upload (no playground)
+
+* [ ] navigate to [http://localhost:4000/img/photos](http://localhost:4000/img/photos)
+* [ ] add a users `githubToken` to the first token field
+* [ ] Click browser and select an image
 
 Iterations
 ---------------
@@ -147,7 +87,7 @@ Iterations
 1. [x] Challenge: Adding the User Type
 2. [x] Connecting Photos to Users
 3. [x] Connecting Users to Photos
-4. [x] Adding currentUser to context
+4. [x] Adding currentUser to contextA
 
 ### d. GitHub Authorization
 
@@ -160,5 +100,5 @@ Iterations
 ### e. Subscriptions and Custom Scalars
 
 1. [x] Adding Subscription Support 
-2. [ ] Uploading File with postPhoto 
+2. [x] Uploading File with postPhoto 
 3. [ ] Adding custom scalar for `DateTime`

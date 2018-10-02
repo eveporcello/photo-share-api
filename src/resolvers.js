@@ -1,5 +1,6 @@
 const { ObjectID } = require('mongodb')
-const { authorizeWithGithub, generateFakeUsers } = require('./lib')
+const path = require('path')
+const { authorizeWithGithub, generateFakeUsers, uploadFile } = require('./lib')
 
 module.exports = {
     Query: {
@@ -18,6 +19,10 @@ module.exports = {
                 throw new Error('only an authorized user can post a photo')
             }
 
+            if (!input.file) {
+                throw new Error('a photo file is required')
+            }
+
             const newPhoto = {
                 ...input,
                 userID: currentUser.githubLogin
@@ -25,6 +30,9 @@ module.exports = {
 
             const { insertedId } = await photos.insertOne(newPhoto)
             newPhoto.id = insertedId.toString()
+
+            var toPath = path.join(__dirname, '..', 'assets', 'photos', `${newPhoto.id}.jpg`)
+            await uploadFile(input.file, toPath)
 
             pubsub.publish('photo-added', { newPhoto })
 

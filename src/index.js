@@ -4,6 +4,7 @@ const { ApolloServer, PubSub } = require('apollo-server-express')
 const { MongoClient } = require('mongodb')
 const { readFileSync } = require('fs')
 const { createServer } = require('http')
+const path = require('path')
 
 const typeDefs = readFileSync('src/typeDefs.graphql', 'UTF-8')
 const resolvers = require('./resolvers')
@@ -43,6 +44,11 @@ const start = async (port) => {
             <a href="${url}">Request a GitHub Code</a>
         `)
     })
+
+    app.use(
+        '/img/photos',
+        express.static(path.join(__dirname, '..', 'assets', 'photos'))
+    )
 
     const httpServer = createServer(app)
     server.installSubscriptionHandlers(httpServer)
