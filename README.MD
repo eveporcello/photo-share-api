@@ -4,55 +4,13 @@ PhotoShare is the main back-end exercise for [GraphQL Workshop](https://www.grap
 
 Changes
 ---------------
-* Import Object ID
+Within the data folder you will find sample json data for __Users__. You'll need to create types to match the data found in this file. Then, we need to add the necessary queries and resolvers to make the user data accessible with our GraphQL Service.
 
-```javascript
-const { MongoClient, ObjectID } = require('mongodb')
-```
+### Goals
 
-* Create Photo Query in Schema
-
-```graphql
-type Query {
-    totalPhotos: Int!
-    allPhotos: [Photo!]!
-    Photo(id: ID!): Photo!
-}
-```
-* Create Photo Resolver in Resolvers
-
-```javascript
-Photo: (parent, { id }, { photos }) => photos.findOne({ _id: ObjectID(id) })
-```
-
-* Test the Query
-
-```graphql
-query getPhoto {
-  Photo(id:"5242445") {
-    name
-    url
-  }
-}
-```
-
-* Use Query Parameters
-
-```graphql
-query getPhoto($photo_id:ID!) {
-  Photo(id:$photo_id) {
-    name
-    url
-  }
-}
-```
-
-```json
-{
-  "photo_id":"524244"
-}
-```
-
+* [ ] Ability to Query the __totalUsers__ count
+* [ ] Ability to Query __allUsers__ records
+* [ ] Ability to Query an individual __User__
 
 Iterations
 ---------------
@@ -60,22 +18,22 @@ Iterations
 ### a. Start
 
 1. [x] Initial Project Folder
-2. [ ] Apollo Server 2.0
+2. [x] Apollo Server 2.0
 
 ### b. The Photo Type
 
-1. [ ] Counting the Photos 
-2. [ ] Connecting to a database
-3. [ ] Setting up context
-4. [ ] Posting Photo
-5. [ ] Handling Photo Categories 
-6. [ ] Using an Input Type 
-7. [ ] Listing All Photos 
-8. [ ] Querying a Single Photo 
+1. [x] Counting the Photos 
+2. [x] Connecting to a database
+3. [x] Setting up context
+4. [x] Posting Photo
+5. [x] Handling Photo Categories 
+6. [x] Using an Input Type 
+7. [x] Listing All Photos 
+8. [x] Querying a Single Photo 
 
 ### c. The User Type
 
-1. [ ] Challenge: Adding the User Type
+1. [x] Challenge: Adding the User Type
 2. [ ] Connecting Photos to Users
 3. [ ] Connecting Users to Photos
 4. [ ] Adding currentUser to context

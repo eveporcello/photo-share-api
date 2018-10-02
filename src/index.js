@@ -10,6 +10,11 @@ const typeDefs = `
         url: String
     }
 
+    type User {
+        githubLogin: ID!
+        name: String!
+    }
+
     enum PhotoCategory {
         PORTRAIT
         LANDSCAPE
@@ -27,6 +32,9 @@ const typeDefs = `
         totalPhotos: Int!
         allPhotos: [Photo!]!
         Photo(id: ID!): Photo!
+        totalUsers: Int!
+        allUsers: [User!]!
+        User(githubLogin: ID!): User
     }
 
     type Mutation {
@@ -38,7 +46,10 @@ const resolvers = {
     Query: {
         totalPhotos: (parent, args, { photos }) => photos.countDocuments(),
         allPhotos: (parent, args, { photos }) => photos.find().toArray(),
-        Photo: (parent, { id }, { photos }) => photos.findOne({ _id: ObjectID(id) })
+        Photo: (parent, { id }, { photos }) => photos.findOne({ _id: ObjectID(id) }),
+        totalUsers: (parent, args, { users }) => users.countDocuments(),
+        allUsers: (parent, args, { users }) => users.find().toArray(),
+        User: (parent, { githubLogin }, { users }) => users.findOne({ githubLogin })
     },
     Mutation: {
         postPhoto: async (parent, { input }, { photos }) => {
@@ -67,7 +78,8 @@ const start = async () => {
         typeDefs,
         resolvers,
         context: {
-            photos: db.collection('photos')
+            photos: db.collection('photos'),
+            users: db.collection('users')
         }
     })
 
