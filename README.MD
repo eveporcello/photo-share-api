@@ -8,8 +8,8 @@ Contents
 * [Helper Library](src/lib.js) - A library of helper functions
 * [Sample Data - Photos](data/photos.json) - Sample JSON data for Photos
 * [Sample Data - Users](data/users.json) - Sample JSON data for Users
+* [Data Population Functions](data/) - Functions to populate database data
 * [Test Upload Page](assets/photos/index.html) - A page to test uploading files
-
 
 Iterations
 ---------------
