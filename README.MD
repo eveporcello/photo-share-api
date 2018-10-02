@@ -5,63 +5,82 @@ PhotoShare is the main back-end exercise for [GraphQL Workshop](https://www.grap
 Changes
 ---------------
 
-### Modularize the Files
-* Move typeDefs to Own File
-* Import typeDefs
+### Schema Changes
 
-```javascript
-const { readFileSync } = require('fs')
-const typeDefs = readFileSync('src/typeDefs.graphql', 'UTF-8')
+* Modify the User Type
+```graphql
+type User {
+    githubLogin: ID!
+    name: String!
+    avatar: String!
+    postedPhotos: [Photo!]!
+}
 ```
 
-* Move resolvers to resolvers.js file (make sure to import `const { ObjectID } = require('mongodb')`)
+* Add the Mutation
 
-```javascript
-const resolvers = require('./resolvers')
-```
-
-### Set up Express Server
-
-* Install dependencies
-
-```
-npm i express 
-npm i apollo-server-express 
-npm i graphql-playground-middleware-express
-```
-* Change index.js
-
-```javascript
-const express = require('express')
-const expressPlayground = require('graphql-playground-middleware-express').default
-const { ApolloServer } = require('apollo-server-express')
-
-...
-
-const start = async (port) => {
-
-    ...
-    
-    const server = new ApolloServer({ typeDefs, resolvers, context })
-    
-    const app = express()
-    server.applyMiddleware({app})
-
-    app.get('/playground', expressPlayground({ endpoint: '/graphql' }))
-
-    app.get('/', (req, res) => {
-        res.end(`Welcome to the Photo Share API`)
-    })
-
-    app.listen({ port }, () => {
-        console.log(`photo-share api running on port ${port}`)
-    })
-
+```graphql
+type AuthPayload {
+    token: String!
+    user: User!
 }
 
-start(process.env.PORT || 4000)
+type Mutation {
+    postPhoto(input: PostPhotoInput!): Photo!
+    githubAuth(code: String!): AuthPayload!
+}
 ```
 
+* Add the githubLogin Mutation
+```javascript
+ Mutation: {
+        githubAuth: async (parent, { code }, { users }) => {
+
+            const payload = await authorizeWithGithub({
+                client_id: process.env.GITHUB_CLIENT_ID,
+                client_secret: process.env.GITHUB_CLIENT_SECRET,
+                code
+            })
+
+            if (payload.message) {
+                throw new Error(payload.message)
+            }
+
+            const githubUserInfo = {
+                githubLogin: payload.login,
+                name: payload.name,
+                avatar: payload.avatar_url,
+                githubToken: payload.access_token
+            }
+
+            const { ops:[user] } = await users.replaceOne(
+                { githubLogin: payload.login }, 
+                githubUserInfo, 
+                { upsert: true }
+            )
+
+            return { user, token: user.githubToken }
+            
+        }
+    }
+```
+
+* Go to `http://localhost:4000`
+* Click Link
+* Get Code
+* Send Mutation
+
+```graphql
+mutation {
+  githubAuth(code:"<CODE_HERE>") {
+    token
+    user {
+      name
+      githubLogin
+    }
+  }
+}
+```
 
 Iterations
 ---------------
@@ -93,7 +112,7 @@ Iterations
 
 1. [x] Configure an express server
 2. [x] Configure Github OAuth
-3. [ ] Add `githubLogin` mutation
+3. [x] Add `githubLogin` mutation
 4. [ ] Add fake users to `githubLogin` mutation
 5. [ ] Identify the `currentUser`
 6. [ ] Post New Photos

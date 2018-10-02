@@ -1,4 +1,5 @@
 const { ObjectID } = require('mongodb')
+const { authorizeWithGithub } = require('./lib')
 
 module.exports = {
     Query: {
@@ -25,6 +26,34 @@ module.exports = {
             newPhoto.id = insertedId.toString()
 
             return newPhoto
+
+        },
+        githubAuth: async (parent, { code }, { users }) => {
+
+            const payload = await authorizeWithGithub({
+                client_id: process.env.GITHUB_CLIENT_ID,
+                client_secret: process.env.GITHUB_CLIENT_SECRET,
+                code
+            })
+
+            if (payload.message) {
+                throw new Error(payload.message)
+            }
+
+            const githubUserInfo = {
+                githubLogin: payload.login,
+                name: payload.name,
+                avatar: payload.avatar_url,
+                githubToken: payload.access_token
+            }
+
+            const { ops: [user] } = await users.replaceOne(
+                { githubLogin: payload.login },
+                githubUserInfo,
+                { upsert: true }
+            )
+
+            return { user, token: user.githubToken }
 
         }
     },

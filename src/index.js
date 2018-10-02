@@ -7,10 +7,6 @@ const { readFileSync } = require('fs')
 const typeDefs = readFileSync('src/typeDefs.graphql', 'UTF-8')
 const resolvers = require('./resolvers')
 
-
-console.log('client id: ', process.env.GITHUB_CLIENT_ID)
-console.log('client secret: ', process.env.GITHUB_CLIENT_SECRET)
-
 const start = async (port) => {
 
     const client = await MongoClient.connect(process.env.DB_HOST, { useNewUrlParser: true })
