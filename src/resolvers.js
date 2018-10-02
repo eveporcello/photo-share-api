@@ -1,5 +1,5 @@
 const { ObjectID } = require('mongodb')
-const { authorizeWithGithub } = require('./lib')
+const { authorizeWithGithub, generateFakeUsers } = require('./lib')
 
 module.exports = {
     Query: {
@@ -30,11 +30,23 @@ module.exports = {
         },
         githubAuth: async (parent, { code }, { users }) => {
 
-            const payload = await authorizeWithGithub({
-                client_id: process.env.GITHUB_CLIENT_ID,
-                client_secret: process.env.GITHUB_CLIENT_SECRET,
-                code
-            })
+            let payload
+
+            if (code === 'TEST') {
+                const { results: [fakeUser] } = await generateFakeUsers(1)
+                payload = {
+                    login: fakeUser.login.username,
+                    name: `${fakeUser.name.first} ${fakeUser.name.last}`,
+                    avatar_url: fakeUser.picture.thumbnail,
+                    access_token: fakeUser.login.sha1
+                }
+            } else {
+                payload = await authorizeWithGithub({
+                    client_id: process.env.GITHUB_CLIENT_ID,
+                    client_secret: process.env.GITHUB_CLIENT_SECRET,
+                    code
+                })
+            }
 
             if (payload.message) {
                 throw new Error(payload.message)

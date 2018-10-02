@@ -4,80 +4,57 @@ PhotoShare is the main back-end exercise for [GraphQL Workshop](https://www.grap
 
 Changes
 ---------------
+* Modify the githubAuth Resolver
 
-### Schema Changes
-
-* Modify the User Type
-```graphql
-type User {
-    githubLogin: ID!
-    name: String!
-    avatar: String!
-    postedPhotos: [Photo!]!
-}
-```
-
-* Add the Mutation
-
-```graphql
-type AuthPayload {
-    token: String!
-    user: User!
-}
-
-type Mutation {
-    postPhoto(input: PostPhotoInput!): Photo!
-    githubAuth(code: String!): AuthPayload!
-}
-```
-
-* Add the githubLogin Mutation
 ```javascript
- Mutation: {
-        githubAuth: async (parent, { code }, { users }) => {
+const { authorizeWithGithub, generateFakeUsers } = require('./lib')
+...
+    githubAuth: async (parent, { code }, { users }) => {
 
-            const payload = await authorizeWithGithub({
+        let payload
+
+        if (code === 'TEST') {
+            const { results: [fakeUser] } = await generateFakeUsers(1)
+            payload = {
+                login: fakeUser.login.username,
+                name: `${fakeUser.name.first} ${fakeUser.name.last}`,
+                avatar_url: fakeUser.picture.thumbnail,
+                access_token: fakeUser.login.sha1
+            }
+        } else {
+            payload = await authorizeWithGithub({
                 client_id: process.env.GITHUB_CLIENT_ID,
                 client_secret: process.env.GITHUB_CLIENT_SECRET,
                 code
             })
-
-            if (payload.message) {
-                throw new Error(payload.message)
-            }
-
-            const githubUserInfo = {
-                githubLogin: payload.login,
-                name: payload.name,
-                avatar: payload.avatar_url,
-                githubToken: payload.access_token
-            }
-
-            const { ops:[user] } = await users.replaceOne(
-                { githubLogin: payload.login }, 
-                githubUserInfo, 
-                { upsert: true }
-            )
-
-            return { user, token: user.githubToken }
-            
         }
-    }
 ```
 
-* Go to `http://localhost:4000`
-* Click Link
-* Get Code
-* Send Mutation
+* Add some test users
 
 ```graphql
-mutation {
-  githubAuth(code:"<CODE_HERE>") {
-    token
+query users {
+  totalUsers
+  allUsers {
+    ...person
+  }
+}
+
+mutation addTestUser {
+  githubAuth(code:"TEST") {
+    token 
     user {
-      name
-      githubLogin
+      ...person
     }
+  }
+}
+
+fragment person on User {
+  name
+  githubLogin
+  avatar
+  postedPhotos {
+    name
   }
 }
 ```
@@ -113,7 +90,7 @@ Iterations
 1. [x] Configure an express server
 2. [x] Configure Github OAuth
 3. [x] Add `githubLogin` mutation
-4. [ ] Add fake users to `githubLogin` mutation
+4. [x] Add fake users to `githubLogin` mutation
 5. [ ] Identify the `currentUser`
 6. [ ] Post New Photos
 
