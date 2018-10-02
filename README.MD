@@ -4,17 +4,55 @@ PhotoShare is the main back-end exercise for [GraphQL Workshop](https://www.grap
 
 Changes
 ---------------
-* Add allPhotos Query to the schema
-
-```graphql
-allPhotos: [Photo!]!
-```
-
-* Add allPhotos Resolver
+* Import Object ID
 
 ```javascript
-allPhotos: (parent, args, { photos }) => photos.find().toArray()
+const { MongoClient, ObjectID } = require('mongodb')
 ```
+
+* Create Photo Query in Schema
+
+```graphql
+type Query {
+    totalPhotos: Int!
+    allPhotos: [Photo!]!
+    Photo(id: ID!): Photo!
+}
+```
+* Create Photo Resolver in Resolvers
+
+```javascript
+Photo: (parent, { id }, { photos }) => photos.findOne({ _id: ObjectID(id) })
+```
+
+* Test the Query
+
+```graphql
+query getPhoto {
+  Photo(id:"5242445") {
+    name
+    url
+  }
+}
+```
+
+* Use Query Parameters
+
+```graphql
+query getPhoto($photo_id:ID!) {
+  Photo(id:$photo_id) {
+    name
+    url
+  }
+}
+```
+
+```json
+{
+  "photo_id":"524244"
+}
+```
+
 
 Iterations
 ---------------

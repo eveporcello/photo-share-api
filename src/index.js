@@ -1,5 +1,5 @@
 const { ApolloServer } = require('apollo-server')
-const { MongoClient } = require('mongodb')
+const { MongoClient, ObjectID } = require('mongodb')
 
 const typeDefs = `
     type Photo {
@@ -7,6 +7,7 @@ const typeDefs = `
         name: String!
         description: String
         category: PhotoCategory!
+        url: String
     }
 
     enum PhotoCategory {
@@ -25,6 +26,7 @@ const typeDefs = `
     type Query {
         totalPhotos: Int!
         allPhotos: [Photo!]!
+        Photo(id: ID!): Photo!
     }
 
     type Mutation {
@@ -35,7 +37,8 @@ const typeDefs = `
 const resolvers = {
     Query: {
         totalPhotos: (parent, args, { photos }) => photos.countDocuments(),
-        allPhotos: (parent, args, { photos }) => photos.find().toArray()
+        allPhotos: (parent, args, { photos }) => photos.find().toArray(),
+        Photo: (parent, { id }, { photos }) => photos.findOne({ _id: ObjectID(id) })
     },
     Mutation: {
         postPhoto: async (parent, { input }, { photos }) => {
@@ -48,6 +51,10 @@ const resolvers = {
             return newPhoto
 
         }
+    },
+    Photo: {
+        id: parent => parent.id || parent._id.toString(),
+        url: parent => `/img/photos/${parent.id || parent._id.toString()}.jpg`
     }
 }
 
