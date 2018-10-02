@@ -4,33 +4,76 @@ PhotoShare is the main back-end exercise for [GraphQL Workshop](https://www.grap
 
 Changes
 ---------------
-* Add postedPhotos field to User
-
-```graphql
-type User {
-    ...
-    postedPhotos: [Photo!]!
-}
-```
-
-* Add postedPhotos resolver
+* Add the user to context. Get the name from a db record.
 
 ```javascript
-postedPhotos: (parent, args, { photos}) => photos.find({ userID: parent.githubLogin }).toArray()
+currentUser: { githubLogin: "Stephan.Kohler15" }
+```
+* Adjust the mutation
+```javascript
+Mutation: {
+    postPhoto: async (parent, { input }, { photos, currentUser }) => {
+
+        if (!currentUser) {
+            throw new Error('only an authorized user can post a photo')
+        }
+
+        const newPhoto = {
+            ...input,
+            userID: currentUser.githubLogin
+        }
+
+        const { insertedId } = await photos.insertOne(newPhoto)
+        newPhoto.id = insertedId.toString()
+        console.log(newPhoto)
+        return newPhoto
+
+    }
+},
 ```
 
-* Test with a Query
+* Send the test queries
 ```graphql
-query photos {
-  allUsers {
-    id
+query user($githubLogin: String!) {
+  User(githubLogin: $githubLogin) {
     name
     postedPhotos {
+      name
+      url
+    }
+  }
+}
+
+mutation post($input:PostPhotoInput!) {
+  postPhoto(input:$input) {
+    id
+    url
+    postedBy {
       name
     }
   }
 }
 ```
+
+```json
+{
+  "githubLogin":"<Correct Login>",
+  "input": {
+    "name": "Sick Turns",
+  	"description": "Carving big turns in the deep powder.",
+  	"category": "ACTION"
+  }
+}
+```
+
+* Test the Error: Change the currentUser in the index.js
+
+```javascript
+context: {
+    currentUser: null
+}
+```
+
 
 Iterations
 ---------------
@@ -56,7 +99,7 @@ Iterations
 1. [x] Challenge: Adding the User Type
 2. [x] Connecting Photos to Users
 3. [x] Connecting Users to Photos
-4. [ ] Adding currentUser to context
+4. [x] Adding currentUser to context
 
 ### d. GitHub Authorization
 

@@ -54,13 +54,20 @@ const resolvers = {
         User: (parent, { githubLogin }, { users }) => users.findOne({ githubLogin })
     },
     Mutation: {
-        postPhoto: async (parent, { input }, { photos }) => {
+        postPhoto: async (parent, { input }, { photos, currentUser }) => {
 
-            const newPhoto = { ...input }
+            if (!currentUser) {
+                throw new Error('only an authorized user can post a photo')
+            }
+
+            const newPhoto = {
+                ...input,
+                userID: currentUser.githubLogin
+            }
 
             const { insertedId } = await photos.insertOne(newPhoto)
             newPhoto.id = insertedId.toString()
-
+            console.log(newPhoto)
             return newPhoto
 
         }
@@ -85,7 +92,8 @@ const start = async () => {
         resolvers,
         context: {
             photos: db.collection('photos'),
-            users: db.collection('users')
+            users: db.collection('users'),
+            currentUser: null
         }
     })
 
