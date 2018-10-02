@@ -7,61 +7,70 @@ Changes
 ### Add a file type to the Post Photo Input
 
 ```graphql
-input PostPhotoInput {
-    name: String! 
-    description: String 
-    category: PhotoCategory=PORTRAIT
-    file: Upload!
+scalar DateTime
+
+type Photo {
+    id: ID!
+    name: String!
+    url: String!
+    description: String
+    category: PhotoCategory!
+    postedBy: User!
+    created: DateTime!
 }
 ```
 
-### Modify the Resolver to Accept the file
+
+### Modify the Resolver
 
 __resolvers.js__
 ```javascript
-const path = require('path')
-const { authorizeWithGithub, generateFakeUsers, uploadFile } = require('./lib')
-```
+const { GraphQLScalarType } = require('graphql')
 
 __resolvers.js__
-```javascript
-postPhoto: async (parent, { input }, { photos, currentUser, pubsub }) => {
-
-    if (!input.file) {
-        throw new Error('a photo file is required')
-    }
-
+...
+module.exports = {
+    
     ...
     
-    var toPath = path.join(__dirname, '..', 'assets', 'photos', `${newPhoto.id}.jpg`)
-    await uploadFile(input.file, toPath)
+    DateTime: new GraphQLScalarType({
+        name: 'DateTime',
+        description: 'A valid date time value.',
+        parseValue: value => new Date(value),
+        serialize: value => new Date(value).toISOString(),
+        parseLiteral: ast => ast.value
+    })
 
-    pubsub.publish('photo-added', { newPhoto })
-
-    return newPhoto
-
-},
+}
 ```
 
-### Serve the assets folder
+### Add a date field to the postPhoto 
 
-__index.js__
 ```javascript
-const path = require('path')
+const newPhoto = {
+    ...input,
+    userID: currentUser.githubLogin,
+    created: new Date()
+}
 
-...
-
-app.use(
-    '/img/photos',
-    express.static(path.join(__dirname, '..', 'assets', 'photos'))
-)
 ```
+
 
 ### Test the Upload (no playground)
 
+* [ ] Drop the photos collection
+* [ ] Delete the photos from the assets folder
 * [ ] navigate to [http://localhost:4000/img/photos](http://localhost:4000/img/photos)
-* [ ] add a users `githubToken` to the first token field
-* [ ] Click browser and select an image
+
+```graphql
+query {
+  allPhotos {
+    id
+    url
+    created
+  }
+}
+```
 
 Iterations
 ---------------
@@ -101,4 +110,4 @@ Iterations
 
 1. [x] Adding Subscription Support 
 2. [x] Uploading File with postPhoto 
-3. [ ] Adding custom scalar for `DateTime`
+3. [x] Adding custom scalar for `DateTime`
