@@ -7,6 +7,10 @@ const { readFileSync } = require('fs')
 const typeDefs = readFileSync('src/typeDefs.graphql', 'UTF-8')
 const resolvers = require('./resolvers')
 
+
+console.log('client id: ', process.env.GITHUB_CLIENT_ID)
+console.log('client secret: ', process.env.GITHUB_CLIENT_SECRET)
+
 const start = async (port) => {
 
     const client = await MongoClient.connect(process.env.DB_HOST, { useNewUrlParser: true })
@@ -28,7 +32,11 @@ const start = async (port) => {
     app.get('/playground', expressPlayground({ endpoint: '/graphql' }))
 
     app.get('/', (req, res) => {
-        res.end('Welcome to the PhotoShare API')
+        let url = `https://github.com/login/oauth/authorize?client_id=${process.env.GITHUB_CLIENT_ID}&scope=user`
+        res.end(`
+            <h1>Welcome to the Photo Share API</h1>
+            <a href="${url}">Request a GitHub Code</a>
+        `)
     })
 
     app.listen({ port }, () => {

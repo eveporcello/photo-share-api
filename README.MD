@@ -92,7 +92,7 @@ Iterations
 ### d. GitHub Authorization
 
 1. [x] Configure an express server
-2. [ ] Configure Github OAuth
+2. [x] Configure Github OAuth
 3. [ ] Add `githubLogin` mutation
 4. [ ] Add fake users to `githubLogin` mutation
 5. [ ] Identify the `currentUser`
