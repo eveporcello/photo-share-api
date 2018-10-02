@@ -1,88 +1,13 @@
-const { ApolloServer } = require('apollo-server')
-const { MongoClient, ObjectID } = require('mongodb')
+const express = require('express')
+const expressPlayground = require('graphql-playground-middleware-express').default
+const { ApolloServer } = require('apollo-server-express')
+const { MongoClient } = require('mongodb')
+const { readFileSync } = require('fs')
 
-const typeDefs = `
-    type Photo {
-        id: ID!
-        name: String!
-        description: String
-        category: PhotoCategory!
-        url: String
-        postedBy: User!
-    }
+const typeDefs = readFileSync('src/typeDefs.graphql', 'UTF-8')
+const resolvers = require('./resolvers')
 
-    type User {
-        githubLogin: ID!
-        name: String!
-        postedPhotos: [Photo!]!
-    }
-
-    enum PhotoCategory {
-        PORTRAIT
-        LANDSCAPE
-        ACTION
-        SELFIE
-    }
-
-    input PostPhotoInput {
-        name: String!
-        description: String
-        category: PhotoCategory=PORTRAIT
-    }
-
-    type Query {
-        totalPhotos: Int!
-        allPhotos: [Photo!]!
-        Photo(id: ID!): Photo!
-        totalUsers: Int!
-        allUsers: [User!]!
-        User(githubLogin: ID!): User
-    }
-
-    type Mutation {
-        postPhoto(input: PostPhotoInput!): Photo!
-    }
-`
-
-const resolvers = {
-    Query: {
-        totalPhotos: (parent, args, { photos }) => photos.countDocuments(),
-        allPhotos: (parent, args, { photos }) => photos.find().toArray(),
-        Photo: (parent, { id }, { photos }) => photos.findOne({ _id: ObjectID(id) }),
-        totalUsers: (parent, args, { users }) => users.countDocuments(),
-        allUsers: (parent, args, { users }) => users.find().toArray(),
-        User: (parent, { githubLogin }, { users }) => users.findOne({ githubLogin })
-    },
-    Mutation: {
-        postPhoto: async (parent, { input }, { photos, currentUser }) => {
-
-            if (!currentUser) {
-                throw new Error('only an authorized user can post a photo')
-            }
-
-            const newPhoto = {
-                ...input,
-                userID: currentUser.githubLogin
-            }
-
-            const { insertedId } = await photos.insertOne(newPhoto)
-            newPhoto.id = insertedId.toString()
-            console.log(newPhoto)
-            return newPhoto
-
-        }
-    },
-    Photo: {
-        id: parent => parent.id || parent._id.toString(),
-        url: parent => `/img/photos/${parent.id || parent._id.toString()}.jpg`,
-        postedBy: (parent, args, { users }) => users.findOne({ githubLogin: parent.userID })
-    },
-    User: {
-        postedPhotos: (parent, args, { photos }) => photos.find({ userID: parent.githubLogin }).toArray()
-    }
-}
-
-const start = async () => {
+const start = async (port) => {
 
     const client = await MongoClient.connect(process.env.DB_HOST, { useNewUrlParser: true })
     const db = client.db()
@@ -93,15 +18,23 @@ const start = async () => {
         context: {
             photos: db.collection('photos'),
             users: db.collection('users'),
-            currentUser: null
+            currentUser: { githubLogin: "Stephan.Kohler15" }
         }
     })
 
-    server.listen()
-        .then(({ port }) => `server listening on ${port}`)
-        .then(console.log)
-        .catch(console.error)
+    const app = express()
+    server.applyMiddleware({ app })
+
+    app.get('/playground', expressPlayground({ endpoint: '/graphql' }))
+
+    app.get('/', (req, res) => {
+        res.end('Welcome to the PhotoShare API')
+    })
+
+    app.listen({ port }, () => {
+        console.log(`PhotoShare API running on ${port}`)
+    })
 
 }
 
-start()
+start(process.env.PORT || 4000)

@@ -4,74 +4,62 @@ PhotoShare is the main back-end exercise for [GraphQL Workshop](https://www.grap
 
 Changes
 ---------------
-* Add the user to context. Get the name from a db record.
+
+### Modularize the Files
+* Move typeDefs to Own File
+* Import typeDefs
 
 ```javascript
-currentUser: { githubLogin: "Stephan.Kohler15" }
-```
-* Adjust the mutation
-```javascript
-Mutation: {
-    postPhoto: async (parent, { input }, { photos, currentUser }) => {
-
-        if (!currentUser) {
-            throw new Error('only an authorized user can post a photo')
-        }
-
-        const newPhoto = {
-            ...input,
-            userID: currentUser.githubLogin
-        }
-
-        const { insertedId } = await photos.insertOne(newPhoto)
-        newPhoto.id = insertedId.toString()
-        console.log(newPhoto)
-        return newPhoto
-
-    }
-},
+const { readFileSync } = require('fs')
+const typeDefs = readFileSync('src/typeDefs.graphql', 'UTF-8')
 ```
 
-* Send the test queries
-```graphql
-query user($githubLogin: String!) {
-  User(githubLogin: $githubLogin) {
-    name
-    postedPhotos {
-      name
-      url
-    }
-  }
-}
-
-mutation post($input:PostPhotoInput!) {
-  postPhoto(input:$input) {
-    id
-    url
-    postedBy {
-      name
-    }
-  }
-}
-```
-
-```json
-{
-  "githubLogin":"<Correct Login>",
-  "input": {
-    "name": "Sick Turns",
-  	"description": "Carving big turns in the deep powder.",
-  	"category": "ACTION"
-  }
-}
-```
-
-* Test the Error: Change the currentUser in the index.js
+* Move resolvers to resolvers.js file (make sure to import `const { ObjectID } = require('mongodb')`)
 
 ```javascript
-context: {
-    currentUser: null
+const resolvers = require('./resolvers')
+```
+
+### Set up Express Server
+
+* Install dependencies
+
+```
+npm i express 
+npm i apollo-server-express 
+npm i graphql-playground-middleware-express
+```
+* Change index.js
+
+```javascript
+const express = require('express')
+const expressPlayground = require('graphql-playground-middleware-express').default
+const { ApolloServer } = require('apollo-server-express')
+
+...
+
+const start = async (port) => {
+
+    ...
+    
+    const server = new ApolloServer({ typeDefs, resolvers, context })
+    
+    const app = express()
+    server.applyMiddleware({app})
+
+    app.get('/playground', expressPlayground({ endpoint: '/graphql' }))
+
+    app.get('/', (req, res) => {
+        res.end(`Welcome to the Photo Share API`)
+    })
+
+    app.listen({ port }, () => {
+        console.log(`photo-share api running on port ${port}`)
+    })
+
 }
+
+start(process.env.PORT || 4000)
 ```
 
 
@@ -103,7 +91,7 @@ Iterations
 
 ### d. GitHub Authorization
 
-1. [ ] Configure an express server
+1. [x] Configure an express server
 2. [ ] Configure Github OAuth
 3. [ ] Add `githubLogin` mutation
 4. [ ] Add fake users to `githubLogin` mutation

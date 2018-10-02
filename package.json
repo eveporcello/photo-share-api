@@ -22,9 +22,12 @@
   },
   "dependencies": {
     "apollo-server": "^2.1.0",
+    "apollo-server-express": "^2.1.0",
     "dotenv": "^6.0.0",
+    "express": "^4.16.3",
     "faker": "^4.1.0",
     "graphql": "^14.0.2",
+    "graphql-playground-middleware-express": "^1.7.3",
     "mongodb": "^3.1.6"
   }
 }
