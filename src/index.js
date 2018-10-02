@@ -12,14 +12,18 @@ const start = async (port) => {
     const client = await MongoClient.connect(process.env.DB_HOST, { useNewUrlParser: true })
     const db = client.db()
 
+    const context = async ({ req }) => {
+        const photos = db.collection('photos')
+        const users = db.collection('users')
+        const githubToken = req.headers.authorization
+        const currentUser = await users.findOne({ githubToken })
+        return { photos, users, currentUser }
+    }
+
     const server = new ApolloServer({
         typeDefs,
         resolvers,
-        context: {
-            photos: db.collection('photos'),
-            users: db.collection('users'),
-            currentUser: { githubLogin: "Stephan.Kohler15" }
-        }
+        context
     })
 
     const app = express()

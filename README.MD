@@ -4,43 +4,44 @@ PhotoShare is the main back-end exercise for [GraphQL Workshop](https://www.grap
 
 Changes
 ---------------
-* Modify the githubAuth Resolver
-
-```javascript
-const { authorizeWithGithub, generateFakeUsers } = require('./lib')
-...
-    githubAuth: async (parent, { code }, { users }) => {
-
-        let payload
-
-        if (code === 'TEST') {
-            const { results: [fakeUser] } = await generateFakeUsers(1)
-            payload = {
-                login: fakeUser.login.username,
-                name: `${fakeUser.name.first} ${fakeUser.name.last}`,
-                avatar_url: fakeUser.picture.thumbnail,
-                access_token: fakeUser.login.sha1
-            }
-        } else {
-            payload = await authorizeWithGithub({
-                client_id: process.env.GITHUB_CLIENT_ID,
-                client_secret: process.env.GITHUB_CLIENT_SECRET,
-                code
-            })
-        }
-```
-
-* Add some test users
+### Modify the Schema
 
 ```graphql
-query users {
-  totalUsers
-  allUsers {
-    ...person
+type Query {
+    me: User
+    ...
+}
+```
+
+### Add the Resolver
+
+```javascript
+me: (parent, args, { currentUser }) => currentUser,
+```
+
+### Modify Context
+
+__index.js__
+```javascript
+const context = async ({req}) => {
+    const photos = db.collection('photos')
+    const users = db.collection('users')
+    const githubToken = req.headers.authorization
+    const currentUser = await users.findOne({ githubToken })
+    return { photos, users, currentUser }
+}
+```
+
+### Test
+
+```graphql
+query currentUser {
+  me {
+    name
   }
 }
 
-mutation addTestUser {
+mutation authorize {
   githubAuth(code:"TEST") {
     token 
     user {
@@ -56,6 +57,13 @@ fragment person on User {
   postedPhotos {
     name
   }
+}
+```
+
+__HTTP Headers__
+```json
+{
+  "Authorization": "d4ef0d880dc3bfd4d445fb6a8c9674d6ebd86935"
 }
 ```
 
@@ -91,8 +99,7 @@ Iterations
 2. [x] Configure Github OAuth
 3. [x] Add `githubLogin` mutation
 4. [x] Add fake users to `githubLogin` mutation
-5. [ ] Identify the `currentUser`
-6. [ ] Post New Photos
+5. [x] Identify the `currentUser`
 
 ### e. Subscriptions and Custom Scalars
 

@@ -3,6 +3,7 @@ const { authorizeWithGithub, generateFakeUsers } = require('./lib')
 
 module.exports = {
     Query: {
+        me: (parent, args, { currentUser }) => currentUser,
         totalPhotos: (parent, args, { photos }) => photos.countDocuments(),
         allPhotos: (parent, args, { photos }) => photos.find().toArray(),
         Photo: (parent, { id }, { photos }) => photos.findOne({ _id: ObjectID(id) }),

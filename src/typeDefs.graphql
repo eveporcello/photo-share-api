@@ -33,6 +33,7 @@ type AuthPayload {
 }
 
 type Query {
+    me: User
     totalPhotos: Int!
     allPhotos: [Photo!]!
     Photo(id: ID!): Photo!
