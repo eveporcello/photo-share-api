@@ -14,6 +14,7 @@ const typeDefs = `
     type User {
         githubLogin: ID!
         name: String!
+        postedPhotos: [Photo!]!
     }
 
     enum PhotoCategory {
@@ -68,6 +69,9 @@ const resolvers = {
         id: parent => parent.id || parent._id.toString(),
         url: parent => `/img/photos/${parent.id || parent._id.toString()}.jpg`,
         postedBy: (parent, args, { users }) => users.findOne({ githubLogin: parent.userID })
+    },
+    User: {
+        postedPhotos: (parent, args, { photos }) => photos.find({ userID: parent.githubLogin }).toArray()
     }
 }
 

@@ -4,43 +4,33 @@ PhotoShare is the main back-end exercise for [GraphQL Workshop](https://www.grap
 
 Changes
 ---------------
-* Run add-connected-data script
-* Show data that has been added
-* Add postedBy field to the schema
+* Add postedPhotos field to User
 
 ```graphql
-type Photo {
+type User {
     ...
-    postedBy: User!
+    postedPhotos: [Photo!]!
 }
 ```
+
+* Add postedPhotos resolver
 
 ```javascript
-const resolvers = {
-    
-    ...
-
-    Photo: {
-        ...
-        postedBy: (parent, args, { users }) => users.findOne({ githubLogin: parent.userID })
-    }
-}
+postedPhotos: (parent, args, { photos}) => photos.find({ userID: parent.githubLogin }).toArray()
 ```
 
-### Test with a Query
-
+* Test with a Query
 ```graphql
 query photos {
-  allPhotos {
+  allUsers {
     id
     name
-    postedBy {
+    postedPhotos {
       name
     }
   }
 }
 ```
-
 
 Iterations
 ---------------
@@ -65,7 +55,7 @@ Iterations
 
 1. [x] Challenge: Adding the User Type
 2. [x] Connecting Photos to Users
-3. [ ] Connecting Users to Photos
+3. [x] Connecting Users to Photos
 4. [ ] Adding currentUser to context
 
 ### d. GitHub Authorization
