@@ -4,13 +4,43 @@ PhotoShare is the main back-end exercise for [GraphQL Workshop](https://www.grap
 
 Changes
 ---------------
-Within the data folder you will find sample json data for __Users__. You'll need to create types to match the data found in this file. Then, we need to add the necessary queries and resolvers to make the user data accessible with our GraphQL Service.
+* Run add-connected-data script
+* Show data that has been added
+* Add postedBy field to the schema
 
-### Goals
+```graphql
+type Photo {
+    ...
+    postedBy: User!
+}
+```
 
-* [ ] Ability to Query the __totalUsers__ count
-* [ ] Ability to Query __allUsers__ records
-* [ ] Ability to Query an individual __User__
+```javascript
+const resolvers = {
+    
+    ...
+
+    Photo: {
+        ...
+        postedBy: (parent, args, { users }) => users.findOne({ githubLogin: parent.userID })
+    }
+}
+```
+
+### Test with a Query
+
+```graphql
+query photos {
+  allPhotos {
+    id
+    name
+    postedBy {
+      name
+    }
+  }
+}
+```
+
 
 Iterations
 ---------------
@@ -34,7 +64,7 @@ Iterations
 ### c. The User Type
 
 1. [x] Challenge: Adding the User Type
-2. [ ] Connecting Photos to Users
+2. [x] Connecting Photos to Users
 3. [ ] Connecting Users to Photos
 4. [ ] Adding currentUser to context
 

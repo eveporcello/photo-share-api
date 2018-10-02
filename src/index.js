@@ -8,6 +8,7 @@ const typeDefs = `
         description: String
         category: PhotoCategory!
         url: String
+        postedBy: User!
     }
 
     type User {
@@ -65,7 +66,8 @@ const resolvers = {
     },
     Photo: {
         id: parent => parent.id || parent._id.toString(),
-        url: parent => `/img/photos/${parent.id || parent._id.toString()}.jpg`
+        url: parent => `/img/photos/${parent.id || parent._id.toString()}.jpg`,
+        postedBy: (parent, args, { users }) => users.findOne({ githubLogin: parent.userID })
     }
 }
 
