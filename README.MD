@@ -22,11 +22,13 @@ Iterations
 ### b. The Photo Type
 
 1. [ ] Counting the Photos 
-2. [ ] Posting a Photo 
-3. [ ] Handling Photo Categories 
-4. [ ] Using an Input Type 
-5. [ ] Listing All Photos 
-6. [ ] Querying a Single Photo 
+2. [ ] Connecting a Database
+3. [ ] Setting Up Context
+4. [ ] Posting a Photo 
+5. [ ] Handling Photo Categories 
+6. [ ] Using an Input Type 
+7. [ ] Listing All Photos 
+8. [ ] Querying a Single Photo 
 
 ### c. The User Type
 
@@ -37,14 +39,11 @@ Iterations
 
 ### d. Context
 
-1. [ ] Add environment and refactor
-2. [ ] Configuring a Database
-3. [ ] Configure an express server
-4. [ ] Configure Github OAuth
-5. [ ] Add `githubLogin` mutation
-6. [ ] Add fake users to `githubLogin` mutation
-7. [ ] Identify the `currentUser`
-8. [ ] Post new Photos to the Database
+1. [ ] Configure an express server
+2. [ ] Configure Github OAuth
+3. [ ] Add `githubLogin` mutation
+4. [ ] Add fake users to `githubLogin` mutation
+5. [ ] Identify the `currentUser`
 
 ### e. Subscriptions and Custom Scalars
 
