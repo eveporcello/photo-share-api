@@ -37,7 +37,7 @@ Iterations
 3. [ ] Connecting Users to Photos
 4. [ ] Adding currentUser to context
 
-### d. Context
+### d. GitHub Auth
 
 1. [ ] Configure an express server
 2. [ ] Configure Github OAuth
