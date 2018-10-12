@@ -33,6 +33,10 @@ const { createServer } = require('http')
 * [ ] remove `app.listen({ port }, () => { ... })`
 
 __index.js__
+* We create a new httpServer using the Express app instance
+* This is ready to handle all of the http requests sent to it based on our current express configuration
+* server.installSubscriptionHandlers is what makes the websockets work. Apollo server adds handlers to support subscriptions with web sockets
+
 ```javascript
 const httpServer = createServer(app)
 server.installSubscriptionHandlers(httpServer)
@@ -62,21 +66,10 @@ const context = async ({ req, connection }) => {
 }
 ```
 
-### Add Subscription Resolvers
-
-__resolvers.js__
-```javascript
-Subscription: {
-    newPhoto: {
-        subscribe: (parent, data, { pubsub }) => pubsub.asyncIterator('photo-added')
-    },
-    newUser: {
-        subscribe: (parent, data, { pubsub }) => pubsub.asyncIterator('user-added')
-    }
-}
-```
-
 ### Publish Events
+* think of this like node's event emitter. we're publishing events every time we add a new photo to the database or a new user.
+* The details about the new photo are passed as the 2nd argumentof the .publish method. 
+* This passes details about the new photo or user to every handler that has subscribed to these events.
 
 __resolvers.js__
 ```javascript
@@ -100,6 +93,22 @@ __resolvers.js__
         
     }
 },
+```
+
+### Add Subscription Resolvers
+
+* subscribe to the events
+* Any time an event is raised, it will be passed through to the photo subscription.
+__resolvers.js__
+```javascript
+Subscription: {
+    newPhoto: {
+        subscribe: (parent, data, { pubsub }) => pubsub.asyncIterator('photo-added')
+    },
+    newUser: {
+        subscribe: (parent, data, { pubsub }) => pubsub.asyncIterator('user-added')
+    }
+}
 ```
 
 ### Test
