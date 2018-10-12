@@ -6,6 +6,11 @@ Changes
 ---------------
 ### Add a file type to the Post Photo Input
 
+* need to modify the API to handle multipart/form-data, the encoding type that is required to pass a file with a post body over the internet. 
+* we're going to take an additional step here that will allow us to pass a file as a GraphQL Argument so the file itself can be handled directly within the resolver.
+* Apollo Server provides a custom scalar called Upload
+* It can be used to capture the file stream, mimetype, and encoding of an uploaded file.
+
 ```graphql
 input PostPhotoInput {
     name: String! 
