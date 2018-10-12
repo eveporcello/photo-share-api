@@ -53,6 +53,14 @@ const { ApolloServer, PubSub } = require('apollo-server-express')
 ```
 
 __index.js__
+
+* We need to adjust the context function
+* queries and mutations are sent over http.
+* When we send either of these operations to a GraphQL Server, the request argument `req` is sent to the context handler.
+* But... when it's a subscription, there's no HTTP request, so there's no request argument. It's null
+* In this case, the WebSocket connection argument will be sent to the context function instead.
+* so we can get the token from the connection context
+
 ```javascript
 const client = await MongoClient.connect(process.env.DB_HOST, { useNewUrlParser: true })
 const db = client.db()
