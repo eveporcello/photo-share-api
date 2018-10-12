@@ -21,6 +21,8 @@ input PostPhotoInput {
 ```
 
 ### Modify the Resolver to Accept the file
+* Using the Upload type means that we'll be able to receive the file itself in the resolver
+* Upload contains info about the file including an upload stream that we can use to save the file.
 
 __resolvers.js__
 ```javascript
@@ -48,7 +50,13 @@ postPhoto: async (parent, { input }, { photos, currentUser, pubsub }) => {
 },
 ```
 
+* The upload function returns a promise which is resolved when the upload is complete. The file argument contains an upload stream that can be piped to a write stream and saved locally
+* We're only handling jpgs for the sake of time.
+
 ### Serve the assets folder
+
+* Add some middleware to allow us to serve static jpeg images
+* Serve local files over a route.
 
 __index.js__
 ```javascript
