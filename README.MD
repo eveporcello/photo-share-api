@@ -43,6 +43,10 @@ module.exports = {
 
 }
 ```
+* parseValue: invoked to parse client input that was sent as variables. This is a javascript object
+* parseLiteral: invoked to parse input sent inline - AST
+* serialize: invoked to take the data and convert it into a format that can be stored.
+
 
 ### Add a date field to the postPhoto 
 
