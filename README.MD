@@ -4,7 +4,8 @@ PhotoShare is the main back-end exercise for [GraphQL Workshop](https://www.grap
 
 Changes
 ---------------
-### Add a file type to the Post Photo Input
+
+### Add DateTime to the schema
 
 ```graphql
 scalar DateTime
