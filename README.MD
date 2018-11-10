@@ -5,63 +5,14 @@ PhotoShare is the main back-end exercise for [GraphQL Workshop](https://www.grap
 Changes
 ---------------
 
-### Modularize the Files
-* Move typeDefs to Own File
-* Import typeDefs
-
-```javascript
-const { readFileSync } = require('fs')
-const typeDefs = readFileSync('src/typeDefs.graphql', 'UTF-8')
-```
-
-* Move resolvers to resolvers.js file (make sure to import `const { ObjectID } = require('mongodb')`)
-
-```javascript
-const resolvers = require('./resolvers')
-```
-
-### Set up Express Server
-
-* Install dependencies
+* Configure OAuth on GitHub
+* Create an App
+* Adjust `.env` file
 
 ```
-npm i express 
-npm i apollo-server-express 
-npm i graphql-playground-middleware-express
+CLIENT_ID=<YOUR_ID_HERE>
+CLIENT_SECRET=<YOUR_SECRET_HERE>
 ```
-* Change index.js
-
-```javascript
-const express = require('express')
-const expressPlayground = require('graphql-playground-middleware-express').default
-const { ApolloServer } = require('apollo-server-express')
-
-...
-
-const start = async (port) => {
-
-    ...
-    
-    const server = new ApolloServer({ typeDefs, resolvers, context })
-    
-    const app = express()
-    server.applyMiddleware({app})
-
-    app.get('/playground', expressPlayground({ endpoint: '/graphql' }))
-
-    app.get('/', (req, res) => {
-        res.end(`Welcome to the Photo Share API`)
-    })
-
-    app.listen({ port }, () => {
-        console.log(`photo-share api running on port ${port}`)
-    })
-
-}
-
-start(process.env.PORT || 4000)
-```
-
 
 Iterations
 ---------------
