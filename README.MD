@@ -2,6 +2,8 @@ PhotoShare API
 ===============
 PhotoShare is the main back-end exercise for [GraphQL Workshop](https://www.graphqlworkshop.com). In this exercise, students build a GraphQL API for a small photo sharing application.
 
+So far, our server handles queries and mutations. Both of these are sent over HTTP. There may be a point where you want to utilize real-time data transport and you might want to incorporate subscriptions. Subscriptions work over websockets meaning that updates are pushed from the server to the page in realtime.
+
 Changes
 ---------------
 ### Add Subscriptions to the Schema
