@@ -4,6 +4,14 @@ PhotoShare is the main back-end exercise for [GraphQL Workshop](https://www.grap
 
 Changes
 ---------------
+
+### Main Idea
+We need a way to upload files to the server, but uploading a file is different than a regular field value.
+
+* API needs to handle multipart/form-data
+* The custom scalar Upload is provided by Apollo, contains info about file including upload stream
+* Need to add express middleware to save the photo
+
 ### Add a file type to the Post Photo Input
 
 * need to modify the API to handle multipart/form-data, the encoding type that is required to pass a file with a post body over the internet. 
